@@ -1,92 +1,93 @@
-// Students ka data store karne ke liye array
+let myPieChart;
 let classList = [];
 
+// Chart setup on page load
+window.onload = function() {
+    const ctx = document.getElementById('myPieChart').getContext('2d');
+    myPieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['A+', 'B', 'C', 'D', 'E', 'F'],
+            datasets: [{
+                data: [0, 0, 0, 0, 0, 0],
+                backgroundColor: ['#2ecc71', '#3498db', '#f1c40f', '#e67e22', '#9b59b6', '#e74c3c']
+            }]
+        }
+    });
+};
+
+// Enter key navigation
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const nameBox = document.getElementById("studentName");
+        const scoreBox = document.getElementById("studentScore");
+
+        if (document.activeElement === nameBox) {
+            if (nameBox.value.trim() !== "") scoreBox.focus();
+        } else if (document.activeElement === scoreBox) {
+            addStudent();
+        }
+    }
+});
+
 function addStudent() {
-    // 1. HTML se inputs pakarna
     const nameInput = document.getElementById("studentName");
     const scoreInput = document.getElementById("studentScore");
     
     const name = nameInput.value.trim();
     const score = parseInt(scoreInput.value);
 
-    // 2. Validation: Agar inputs khali hon
-    if (name === "" || isNaN(score)) {
+    if (name === "" || isNaN(score)) return;
 
-        alert("Please enter a valid name and score!");
-        return;
-    }
+    let grade = "";
+    if (score >= 90) grade = 'A+';
+    else if (score >= 80) grade = 'B';
+    else if (score >= 70) grade = 'C';
+    else if (score >= 60) grade = 'D';
+    else if (score >= 50) grade = 'E';
+    else grade = 'F';
 
-    // 3. Grade Logic (Wahi jo aapne C++ mein banayi thi)
-    let letterGrade = "";
-    if(score >= 90) letterGrade = 'A+';
-    else if(score >= 80) letterGrade = 'B';
-    else if(score >= 70) letterGrade = 'C';
-    else if(score >= 60) letterGrade = 'D';
-    else if(score >= 50) letterGrade = 'E';
-    else letterGrade = 'F';
+    classList.push({ name, score, grade });
 
-    // 4. Data ko Object mein save karna
-    const student = {
-        name: name,
-        score: score,
-        grade: letterGrade
-    };
-
-    // 5. List mein add karna
-    classList.push(student);
+    updateDisplay();
     
-    // 6. Table aur Average ko screen par update karna
-    updateUI();
-
-    // 7. Inputs ko khali karna agle student ke liye
+    // Clear and reset
     nameInput.value = "";
     scoreInput.value = "";
     nameInput.focus();
 }
 
-function updateUI() {
+function updateDisplay() {
     const tbody = document.querySelector("#studentTable tbody");
-    const avgDisplay = document.getElementById("averageDisplay");
+    const avgDiv = document.getElementById("averageDisplay");
     
-    // Purana table saaf karna
     tbody.innerHTML = "";
-    let totalScore = 0;
+    let total = 0;
+    let counts = { "A+": 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
 
-    // Har student ke liye nai row banana
     classList.forEach(s => {
-        const row = `<tr>
-            <td>${s.name}</td>
-            <td>${s.score}</td>
-            <td>${s.grade}</td>
-        </tr>`;
-        tbody.innerHTML += row;
-        totalScore += s.score;
+        tbody.innerHTML += `<tr><td>${s.name}</td><td>${s.score}</td><td>${s.grade}</td></tr>`;
+        total += s.score;
+        counts[s.grade]++;
     });
 
-    // Average calculate karna
-    const average = classList.length > 0 ? (totalScore / classList.length).toFixed(2) : 0;
-    avgDisplay.innerText = "Class Average: " + average;
+    // Update Average
+    let avg = (total / classList.length).toFixed(2);
+    avgDiv.innerText = "Class Average: " + avg;
+
+    // Update Chart
+    myPieChart.data.datasets[0].data = [counts["A+"], counts.B, counts.C, counts.D, counts.E, counts.F];
+    myPieChart.update();
 }
 
 function exportToCSV() {
-    if (classList.length === 0) {
-        alert("Pehle kuch students add karein!");
-        return;
-    }
-
-    let csv = "Student Name,Score,Letter Grade\n";
-    classList.forEach(s => {
-        csv += `${s.name},${s.score},${s.grade}\n`;
-    });
-
+    if (classList.length === 0) return;
+    let csv = "Name,Score,Grade\n";
+    classList.forEach(s => csv += `${s.name},${s.score},${s.grade}\n`);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.style.display = 'none';
     a.href = url;
-    a.download = 'Student_Grades.csv';
-    document.body.appendChild(a);
+    a.download = 'Grade_Report.csv';
     a.click();
-    window.URL.revokeObjectURL(url);
 }
-

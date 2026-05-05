@@ -11,16 +11,18 @@ function addStudent() {
 
     // 2. Validation: Agar inputs khali hon
     if (name === "" || isNaN(score)) {
-        alert("Meharbani karke sahi Naam aur Score likhein!");
+
+        alert("Please enter a valid name and score!");
         return;
     }
 
     // 3. Grade Logic (Wahi jo aapne C++ mein banayi thi)
     let letterGrade = "";
-    if(score >= 90) letterGrade = 'A';
+    if(score >= 90) letterGrade = 'A+';
     else if(score >= 80) letterGrade = 'B';
     else if(score >= 70) letterGrade = 'C';
     else if(score >= 60) letterGrade = 'D';
+    else if(score >= 50) letterGrade = 'E';
     else letterGrade = 'F';
 
     // 4. Data ko Object mein save karna
@@ -87,3 +89,4 @@ function exportToCSV() {
     a.click();
     window.URL.revokeObjectURL(url);
 }
+

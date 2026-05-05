@@ -1,7 +1,6 @@
 let myPieChart;
 let classList = [];
 
-// Chart setup on page load
 window.onload = function() {
     const ctx = document.getElementById('myPieChart').getContext('2d');
     myPieChart = new Chart(ctx, {
@@ -16,7 +15,6 @@ window.onload = function() {
     });
 };
 
-// Enter key navigation
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
         const nameBox = document.getElementById("studentName");
@@ -37,7 +35,20 @@ function addStudent() {
     const name = nameInput.value.trim();
     const score = parseInt(scoreInput.value);
 
-    if (name === "" || isNaN(score)) return;
+    // Name Validation: Only alphabets and spaces
+    const namePattern = /^[A-Za-z\s]+$/;
+    if (!namePattern.test(name)) {
+        alert("Invalid Name! Please use alphabets only.");
+        nameInput.focus();
+        return;
+    }
+
+    // Score Validation: Between 0 and 100
+    if (isNaN(score) || score < 0 || score > 100) {
+        alert("Invalid Score! Please enter a number between 0 and 100.");
+        scoreInput.focus();
+        return;
+    }
 
     let grade = "";
     if (score >= 90) grade = 'A+';
@@ -51,7 +62,6 @@ function addStudent() {
 
     updateDisplay();
     
-    // Clear and reset
     nameInput.value = "";
     scoreInput.value = "";
     nameInput.focus();
@@ -71,17 +81,15 @@ function updateDisplay() {
         counts[s.grade]++;
     });
 
-    // Update Average
-    let avg = (total / classList.length).toFixed(2);
+    let avg = classList.length > 0 ? (total / classList.length).toFixed(2) : 0;
     avgDiv.innerText = "Class Average: " + avg;
 
-    // Update Chart
     myPieChart.data.datasets[0].data = [counts["A+"], counts.B, counts.C, counts.D, counts.E, counts.F];
     myPieChart.update();
 }
 
 function exportToCSV() {
-    if (classList.length === 0) return;
+    if (classList.length === 0) return alert("No data to export!");
     let csv = "Name,Score,Grade\n";
     classList.forEach(s => csv += `${s.name},${s.score},${s.grade}\n`);
     const blob = new Blob([csv], { type: 'text/csv' });
